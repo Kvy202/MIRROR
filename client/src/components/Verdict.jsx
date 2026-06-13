@@ -1,7 +1,6 @@
-// The reveal overlay. When the timer hits zero the server sends round:resolve
-// and this takes over for the reveal window — showing the winning answer and the
-// reflection the crowd's choice cast back at it.
-export default function Verdict({ verdict, round }) {
+// The reveal overlay. Shows the winning answer, the reflection it cast — and
+// where YOU stood: with the crowd or against it, and whether you read the room.
+export default function Verdict({ verdict, round, standing }) {
   if (!verdict || !round) return null;
 
   const winner = verdict.result;
@@ -16,6 +15,19 @@ export default function Verdict({ verdict, round }) {
         {verdict.tally.A} &nbsp;·&nbsp; {verdict.tally.B}
       </p>
       <p className="verdict__consequence">{reveal}</p>
+
+      {standing?.side && (
+        <p className={`verdict__you${standing.majority ? '' : ' verdict__you--minority'}`}>
+          {standing.majority
+            ? `You were with the ${standing.pct}%.`
+            : `You stood with the ${standing.pct}% — the minority.`}
+        </p>
+      )}
+      {standing?.prediction && (
+        <p className="verdict__predict">
+          {standing.prediction.correct ? '✓ You read the crowd right.' : '✗ The crowd surprised you.'}
+        </p>
+      )}
     </div>
   );
 }

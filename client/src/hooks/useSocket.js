@@ -4,6 +4,22 @@ import { getSessionId } from '../lib/session.js';
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:4001';
 const REVEALED_KEY = 'mirror.revealedArchetype';
+const DAY_KEY = 'mirror.dayStreak';
+
+// Consecutive days the soul has returned (a gentle habit loop, client-side).
+function computeDayStreak() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const saved = JSON.parse(localStorage.getItem(DAY_KEY) || '{}');
+    if (saved.last === today) return saved.streak || 1;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const streak = saved.last === yesterday ? (saved.streak || 1) + 1 : 1;
+    localStorage.setItem(DAY_KEY, JSON.stringify({ last: today, streak }));
+    return streak;
+  } catch {
+    return 1;
+  }
+}
 
 // Subscribes to MIRROR's heartbeat and exposes the synced view of the collective
 // plus an answer() action. The server is the source of truth — this hook only
@@ -22,8 +38,15 @@ export function useSocket() {
   const [tribes, setTribes] = useState(null); // live tribe tug-of-war
   const [missed, setMissed] = useState(null); // "you weren't here"
 
+  const [hasPredicted, setHasPredicted] = useState(false);
+  const [standing, setStanding] = useState(null); // you-vs-crowd, this round's verdict
+  const [session, setSession] = useState({ answered: 0, withCrowd: 0, predicted: 0, predictedRight: 0 });
+  const [dayStreak] = useState(() => computeDayStreak()); // consecutive days returning
+
   const votedRound = useRef(null);
   const roundNumberRef = useRef(null);
+  const myChoice = useRef(null); // { round, choice }
+  const myPredict = useRef(null); // { round, choice }
   const lastRevealed = useRef(localStorage.getItem(REVEALED_KEY));
 
   useEffect(() => {
@@ -40,7 +63,11 @@ export function useSocket() {
       setRound(payload);
       setTally(payload.tally ?? { A: 0, B: 0 });
       setVerdict(null);
-      if (votedRound.current !== payload.roundNumber) setHasVoted(false);
+      setStanding(null);
+      if (votedRound.current !== payload.roundNumber) {
+        setHasVoted(false);
+        setHasPredicted(false);
+      }
     };
 
     const onTally = ({ A, B }) => setTally({ A, B });
@@ -57,6 +84,30 @@ export function useSocket() {
           tally: payload.tally,
         });
       }
+
+      // "You vs. the crowd": where did I stand, and did I read the room right?
+      const r = payload.roundNumber;
+      const std = {};
+      if (myChoice.current?.round === r) {
+        const side = myChoice.current.choice;
+        const total = payload.tally.A + payload.tally.B;
+        std.side = side;
+        std.pct = total ? Math.round((payload.tally[side] / total) * 100) : 0;
+        std.majority = payload.result === side;
+      }
+      if (myPredict.current?.round === r) {
+        std.prediction = { guess: myPredict.current.choice, correct: myPredict.current.choice === payload.result };
+      }
+      if (std.side || std.prediction) {
+        setStanding(std);
+        setSession((s) => ({
+          answered: s.answered + (std.side ? 1 : 0),
+          withCrowd: s.withCrowd + (std.majority ? 1 : 0),
+          predicted: s.predicted + (std.prediction ? 1 : 0),
+          predictedRight: s.predictedRight + (std.prediction?.correct ? 1 : 0),
+        }));
+      }
+
       if (votedRound.current !== roundNumberRef.current) return;
       const sid = getSessionId();
       if (!sid) return;
@@ -113,7 +164,15 @@ export function useSocket() {
     if (hasVoted || !round || verdict) return;
     socket.emit('vote:cast', { choice }); // identity is the signed cookie
     votedRound.current = round.roundNumber;
+    myChoice.current = { round: round.roundNumber, choice };
     setHasVoted(true);
+  };
+
+  const predictCrowd = (choice) => {
+    if (hasPredicted || !round || verdict) return;
+    socket.emit('predict:cast', { choice });
+    myPredict.current = { round: round.roundNumber, choice };
+    setHasPredicted(true);
   };
 
   // Badge shows the live archetype, falling back to the last stored so a
@@ -129,6 +188,11 @@ export function useSocket() {
     presence,
     hasVoted,
     answer,
+    hasPredicted,
+    predictCrowd,
+    standing,
+    session,
+    dayStreak,
     soul,
     archetype,
     archetypeReveal,

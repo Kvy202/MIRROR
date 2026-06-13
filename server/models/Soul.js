@@ -15,8 +15,17 @@ const soulSchema = new mongoose.Schema({
     idealism: { type: Number, default: 0 },
   },
   streak: { type: Number, default: 0 }, // consecutive rounds answered
+  bestStreak: { type: Number, default: 0 }, // longest streak ever reached
   lastVotedRound: { type: Number, default: 0 }, // for computing the streak
   lastSeenRound: { type: Number, default: 0 }, // for the "you weren't here" twist
+  // Empathy: how often this soul predicted which way the crowd would lean.
+  empathyHits: { type: Number, default: 0 },
+  empathyRounds: { type: Number, default: 0 },
+  // A bounded trail of how this soul's archetype has drifted over time.
+  journey: {
+    type: [{ roundNumber: Number, archetype: String }],
+    default: [],
+  },
   firstSeen: { type: Date, default: Date.now },
 });
 

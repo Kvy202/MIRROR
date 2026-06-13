@@ -18,6 +18,22 @@ export function archetypeMeta(name) {
   return ARCHETYPES[name] ?? { color: '#9aa', blurb: '' };
 }
 
+// Each archetype's mirror-opposite (same dimension, opposite direction).
+const OPPOSITE = {
+  'The Caregiver': 'The Stoic',
+  'The Stoic': 'The Caregiver',
+  'The Confessor': 'The Diplomat',
+  'The Diplomat': 'The Confessor',
+  'The Rebel': 'The Guardian',
+  'The Guardian': 'The Rebel',
+  'The Romantic': 'The Realist',
+  'The Realist': 'The Romantic',
+};
+
+export function oppositeArchetype(name) {
+  return OPPOSITE[name] ?? null;
+}
+
 // The four tribes (by dominant heart dimension) for the live tug-of-war.
 export const TRIBES = {
   Hearts: { color: '#ff6b9d', sub: 'led by warmth' },

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSocket } from './hooks/useSocket.js';
+import { getSessionId } from './lib/session.js';
 import Presence from './components/Presence.jsx';
 import Dilemma from './components/Dilemma.jsx';
 import WorldBrain from './components/WorldBrain.jsx';
@@ -9,11 +10,11 @@ import Factions from './components/Factions.jsx';
 import MetaReveal from './components/MetaReveal.jsx';
 import MessageBanner from './components/MessageBanner.jsx';
 import AbsenceReveal from './components/AbsenceReveal.jsx';
+import SoulPortrait from './components/SoulPortrait.jsx';
 
 const META_SEEN_KEY = 'mirror.metaSeen';
-const META_AUTO_AT = 8; // resolved rounds before the portrait unveils itself
+const META_AUTO_AT = 8;
 
-// Which tribe a soul belongs to, from its dominant trait (mirrors the server).
 function myTribeFrom(soul) {
   const tr = soul?.traits;
   if (!tr) return null;
@@ -34,6 +35,9 @@ function myTribeFrom(soul) {
   return mag === 0 ? null : best;
 }
 
+// A shared ?soul=ID link opens that soul's public reflection.
+const publicSoulId = new URLSearchParams(location.search).get('soul');
+
 export default function App() {
   const {
     connected,
@@ -43,6 +47,11 @@ export default function App() {
     presence,
     hasVoted,
     answer,
+    hasPredicted,
+    predictCrowd,
+    standing,
+    session,
+    dayStreak,
     soul,
     archetype,
     archetypeReveal,
@@ -54,6 +63,8 @@ export default function App() {
   } = useSocket();
 
   const [metaOpen, setMetaOpen] = useState(false);
+  const [portraitOpen, setPortraitOpen] = useState(false);
+  const [publicOpen, setPublicOpen] = useState(Boolean(publicSoulId));
 
   useEffect(() => {
     const len = world?.history?.length ?? 0;
@@ -75,14 +86,15 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // The whole room takes on the mood of the crowd's hope — warm when hopeful,
-  // cool and dim when bleak.
   const hope = world?.hope ?? 50;
-  const moodStyle = {
-    '--mood': `hsl(${200 + (hope - 50) * 1.2}, 70%, 8%)`,
-  };
-
+  const moodStyle = { '--mood': `hsl(${200 + (hope - 50) * 1.2}, 70%, 8%)` };
   const myTribe = myTribeFrom(soul);
+
+  // Session "kindred" line: how often you've stood with the crowd this session.
+  const kindred =
+    session.answered >= 3
+      ? `You've sided with humanity ${session.withCrowd}/${session.answered} this session`
+      : null;
 
   return (
     <div className="app" style={moodStyle}>
@@ -92,37 +104,52 @@ export default function App() {
         world={world}
         archetype={archetype}
         onOpenCodex={() => setMetaOpen(true)}
+        onOpenPortrait={() => setPortraitOpen(true)}
       />
 
       <MessageBanner message={world?.confession} />
 
       <main className="stage">
-        {/* The mirror is the surface everyone stares into. The current question
-            (or the reflection) floats over it. */}
         <div className="brain-wrap">
-          <WorldBrain />
+          <WorldBrain world={world} />
           <div className="brain-overlay">
             {verdict ? (
-              <Verdict verdict={verdict} round={round} />
+              <Verdict verdict={verdict} round={round} standing={standing} />
             ) : (
-              <Dilemma round={round} hasVoted={hasVoted} onVote={answer} locked={!!verdict} />
+              <Dilemma
+                round={round}
+                hasVoted={hasVoted}
+                onVote={answer}
+                locked={!!verdict}
+                hasPredicted={hasPredicted}
+                onPredict={predictCrowd}
+              />
             )}
           </div>
         </div>
+
+        {kindred && <p className="kindred">{kindred}</p>}
 
         <Factions tribes={tribes} standings={standings} myTribe={myTribe} />
       </main>
 
       <footer className="footer">
-        <button className="footer__codex" onClick={() => setMetaOpen(true)}>
-          ◆ SEE THE FACE IN THE MIRROR
-        </button>
+        <div className="footer__row">
+          <button className="footer__codex" onClick={() => setPortraitOpen(true)}>◆ YOUR REFLECTION</button>
+          <button className="footer__codex" onClick={() => setMetaOpen(true)}>◆ THE FACE IN THE MIRROR</button>
+        </div>
         <div>You think you are answering a question. You are being read.</div>
       </footer>
 
       <AbsenceReveal missed={missed} onDismiss={dismissMissed} />
       <AlignmentReveal reveal={archetypeReveal} onDismiss={dismissReveal} />
       <MetaReveal open={metaOpen} onClose={() => setMetaOpen(false)} />
+      {portraitOpen && (
+        <SoulPortrait sessionId={getSessionId()} dayStreak={dayStreak} onClose={() => setPortraitOpen(false)} />
+      )}
+      {publicOpen && (
+        <SoulPortrait sessionId={publicSoulId} isPublic onClose={() => setPublicOpen(false)} />
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ const CURATED = [
   // —— morality ——
   {
     category: 'morality',
+    heavy: true,
     prompt: 'A runaway trolley will kill five strangers. You can pull a lever to divert it — killing one person instead. Do you pull it?',
     optionA: 'Pull it — save the five',
     optionB: "Don't — refuse to cause a death",
@@ -49,6 +50,7 @@ const CURATED = [
   },
   {
     category: 'morality',
+    heavy: true,
     prompt: 'You could press a button to end all suffering on Earth — but it would also end all of humanity, instantly and painlessly. Do you press it?',
     optionA: 'Press it — no more pain',
     optionB: 'Never — pain is the price of life',
@@ -192,6 +194,184 @@ const CURATED = [
     optionB: 'No — once was enough',
     A: { traits: t(1, 1, 1, 3), reveal: 'The crowd would live it all again. We would say yes to everything, even the pain.' },
     B: { traits: t(0, 2, 0, -1), reveal: 'The crowd would not repeat it. Once, we decided, was enough.' },
+  },
+
+  // —— more morality ——
+  {
+    category: 'morality',
+    prompt: 'You find a wallet stuffed with cash and the owner’s address inside. No one saw you. Do you return it untouched, or keep it?',
+    optionA: 'Return it, every dollar',
+    optionB: 'Keep it — they’ll never know',
+    A: { traits: t(2, 2, 0, 1), reveal: 'The crowd returned the wallet. Honesty when no one is watching is still honesty.' },
+    B: { traits: t(-2, -2, 1, -1), reveal: 'The crowd kept it. A quiet theft, rationalized.' },
+  },
+  {
+    category: 'morality',
+    heavy: true,
+    prompt: 'A lifeboat holds ten. There are eleven of you, and it will sink with all aboard unless one goes overboard. Do you draw lots, or refuse and risk everyone?',
+    optionA: 'Draw lots — sacrifice one',
+    optionB: 'Refuse — all or none',
+    A: { traits: t(0, 1, 2, -1), reveal: 'The crowd drew lots. We would sacrifice one cold number to save the rest.' },
+    B: { traits: t(2, 1, -1, 2), reveal: 'The crowd refused. We would not choose who dies, even to live.' },
+  },
+  {
+    category: 'morality',
+    prompt: 'You can report a friend’s small crime that hurt no one, or stay silent and stay loyal. Which?',
+    optionA: 'Report it — the rule is the rule',
+    optionB: 'Stay silent — loyalty first',
+    A: { traits: t(-1, 2, 1, -1), reveal: 'The crowd reported it. Principle over the bond.' },
+    B: { traits: t(2, -1, 0, 1), reveal: 'The crowd stayed silent. The bond over the rule.' },
+  },
+
+  // —— more love ——
+  {
+    category: 'love',
+    prompt: 'You can have a love that burns bright and ends in a year, or a quiet, steady warmth that lasts fifty. Which do you choose?',
+    optionA: 'One blazing year',
+    optionB: 'Fifty quiet years',
+    A: { traits: t(1, 0, 3, 2), reveal: 'The crowd chose the blaze. Better to burn once than to glow forever.' },
+    B: { traits: t(2, 1, -2, 0), reveal: 'The crowd chose the long warmth. We would take the steady over the spark.' },
+  },
+  {
+    category: 'love',
+    prompt: 'Your closest friend and your partner are drowning, and you can reach only one. (No one else is coming.) Who do you swim to?',
+    optionA: 'Your partner',
+    optionB: 'Your closest friend',
+    heavy: true,
+    A: { traits: t(1, 1, 0, 2), reveal: 'The crowd swam to their love. Romance over the oldest loyalty.' },
+    B: { traits: t(2, 1, 0, 0), reveal: 'The crowd swam to their friend. The oldest bond pulled hardest.' },
+  },
+  {
+    category: 'love',
+    prompt: 'Would you rather be the one who loves a little more, or the one who is loved a little more?',
+    optionA: 'Love more',
+    optionB: 'Be loved more',
+    A: { traits: t(3, 1, 1, 2), reveal: 'The crowd would rather love more. We choose the open hand, even unguarded.' },
+    B: { traits: t(-1, 0, -1, 0), reveal: 'The crowd would rather be loved more. We would keep a little of ourselves safe.' },
+  },
+  {
+    category: 'love',
+    prompt: 'A pill could erase your worst heartbreak — and the person tied to it — completely. Do you take it?',
+    optionA: 'Take it — be free of them',
+    optionB: 'Keep it — they made you who you are',
+    A: { traits: t(-2, -1, 1, -1), reveal: 'The crowd erased the heartbreak. Peace over the person.' },
+    B: { traits: t(2, 2, 0, 2), reveal: 'The crowd kept it. Even the wound was worth keeping.' },
+  },
+
+  // —— more mortality ——
+  {
+    category: 'mortality',
+    prompt: 'You can live an ordinary life to 90, or a dazzling one that ends at 40. Which do you take?',
+    optionA: 'Ordinary, to 90',
+    optionB: 'Dazzling, to 40',
+    A: { traits: t(0, 1, -2, -1), reveal: 'The crowd chose the long ordinary road. More days, gently spent.' },
+    B: { traits: t(0, 0, 3, 2), reveal: 'The crowd chose the dazzling, short one. Better a bright flame than a long ember.' },
+  },
+  {
+    category: 'mortality',
+    prompt: 'At the very end, would you rather be surrounded by everyone you love, or slip away quietly, alone and unafraid?',
+    optionA: 'Surrounded by loved ones',
+    optionB: 'Quietly, alone',
+    A: { traits: t(3, 0, 0, 1), reveal: 'The crowd chose to be surrounded. We would not face the end without them.' },
+    B: { traits: t(-1, 1, 1, 0), reveal: 'The crowd chose to slip away quietly. Some doors we would close ourselves.' },
+  },
+  {
+    category: 'mortality',
+    prompt: 'You can know, with certainty, that there is something after death — or keep the mystery forever. Which?',
+    optionA: 'Know for certain',
+    optionB: 'Keep the mystery',
+    A: { traits: t(0, 2, 0, -1), reveal: 'The crowd chose certainty. We would trade wonder for an answer.' },
+    B: { traits: t(0, -1, 1, 2), reveal: 'The crowd kept the mystery. We would rather wonder than be sure.' },
+  },
+
+  // —— more desire / ambition ——
+  {
+    category: 'desire',
+    prompt: 'You can be the best in the world at one thing no one will ever see, or merely good at something that touches millions. Which?',
+    optionA: 'Unseen mastery',
+    optionB: 'Seen, but ordinary',
+    A: { traits: t(-1, 1, 0, 2), reveal: 'The crowd chose the unseen mastery. The work itself was enough.' },
+    B: { traits: t(2, 0, 0, 0), reveal: 'The crowd chose to be seen. To touch others mattered more than to be great.' },
+  },
+  {
+    category: 'desire',
+    prompt: 'A genie offers your single deepest wish — but a stranger, somewhere, loses something equal. Do you wish?',
+    optionA: 'Make the wish',
+    optionB: 'Refuse it',
+    heavy: true,
+    A: { traits: t(-2, 0, 2, 0), reveal: 'The crowd made the wish. Our longing outweighed a stranger’s loss.' },
+    B: { traits: t(2, 1, -1, 1), reveal: 'The crowd refused. We would not buy our joy with another’s grief.' },
+  },
+  {
+    category: 'desire',
+    prompt: 'Would you rather be remembered as good, or actually be good and remembered as nothing?',
+    optionA: 'Remembered as good',
+    optionB: 'Truly good, unremembered',
+    A: { traits: t(-1, -1, 0, -1), reveal: 'The crowd chose the reputation. The story mattered more than the truth of it.' },
+    B: { traits: t(2, 2, 0, 2), reveal: 'The crowd chose to truly be good. Goodness without an audience.' },
+  },
+
+  // —— more truth / vulnerability ——
+  {
+    category: 'truth',
+    prompt: 'You can read everyone’s honest, unfiltered thoughts about you for one day — or never know. Do you read them?',
+    optionA: 'Read them',
+    optionB: 'Never know',
+    A: { traits: t(-1, 2, 2, -1), reveal: 'The crowd read the thoughts. We would rather know than imagine.' },
+    B: { traits: t(1, -1, -1, 1), reveal: 'The crowd looked away. Some truths we would rather not carry.' },
+  },
+  {
+    category: 'truth',
+    prompt: 'Someone you love did something unforgivable years ago and got away with it. You just found out. Do you tell them you know?',
+    optionA: 'Tell them you know',
+    optionB: 'Carry it in silence',
+    heavy: true,
+    A: { traits: t(-1, 3, 2, 0), reveal: 'The crowd spoke. We would rather break the quiet than live the lie.' },
+    B: { traits: t(2, -2, -1, 0), reveal: 'The crowd kept silent. We would carry it so they would not have to.' },
+  },
+  {
+    category: 'truth',
+    prompt: 'Would you rather everyone always knew when you were lying, or you always knew when others were?',
+    optionA: 'They see through me',
+    optionB: 'I see through them',
+    A: { traits: t(1, 3, 0, 1), reveal: 'The crowd chose to be transparent. We would rather be honest than armored.' },
+    B: { traits: t(-1, 0, 1, -1), reveal: 'The crowd chose to see through others. We would rather hold the advantage.' },
+  },
+
+  // —— more existential ——
+  {
+    category: 'existential',
+    prompt: 'You learn your whole life — every joy, every loss — was a simulation built to test you. Do you want to be told what was real, or left in peace?',
+    optionA: 'Tell me what was real',
+    optionB: 'Leave me in peace',
+    A: { traits: t(0, 3, 2, 1), reveal: 'The crowd demanded the truth, whatever it cost.' },
+    B: { traits: t(1, -2, -1, 0), reveal: 'The crowd chose peace over the truth of it all.' },
+  },
+  {
+    category: 'existential',
+    prompt: 'You can feel exactly how much your life mattered to the world — the real number, good or crushing. Do you look?',
+    optionA: 'Look at the number',
+    optionB: 'Never look',
+    A: { traits: t(-1, 2, 3, -1), reveal: 'The crowd looked. We would face our own smallness rather than wonder.' },
+    B: { traits: t(1, -1, -1, 2), reveal: 'The crowd looked away. A life is not a number to be checked.' },
+  },
+
+  // —— more self (lighter) ——
+  {
+    category: 'self',
+    prompt: 'Would you rather always know what time it is exactly, or always know exactly how someone near you is feeling?',
+    optionA: 'Always know the time',
+    optionB: 'Always feel what others feel',
+    A: { traits: t(-2, 0, 0, -1), reveal: 'The crowd kept the clock. Order over empathy.' },
+    B: { traits: t(3, 0, 0, 1), reveal: 'The crowd chose to feel others. We would carry everyone’s weather.' },
+  },
+  {
+    category: 'self',
+    prompt: 'Would you rather start every day knowing it might be your last, or live as if you had forever?',
+    optionA: 'As if today could be the last',
+    optionB: 'As if you had forever',
+    A: { traits: t(1, 2, 1, 2), reveal: 'The crowd chose to live each day as the last. Urgency over ease.' },
+    B: { traits: t(0, -1, 0, 0), reveal: 'The crowd chose to live as if forever. We would rather not count.' },
   },
 
   // —— the rare "begin again" ——

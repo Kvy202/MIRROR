@@ -35,6 +35,7 @@ const state = {
   tribeOf: new Map(), // sessionId -> tribe (the live tug-of-war roster)
   pending: { A: 0, B: 0 },
   flushTimer: null,
+  predictions: new Map(), // sessionId -> the side they think the crowd will pick
   phase: 'voting', // 'voting' | 'reveal'
   lastReveal: null,
   votesByIp: new Map(),
@@ -146,7 +147,17 @@ export async function helloSoul(sessionId) {
   }
   if (currentRound) await Soul.updateOne({ sessionId }, { $set: { lastSeenRound: currentRound } });
 
-  return { sessionId, votesCast: soul.votesCast, traits: soul.traits, streak: soul.streak, archetype, missed };
+  return {
+    sessionId,
+    votesCast: soul.votesCast,
+    traits: soul.traits,
+    streak: soul.streak,
+    bestStreak: soul.bestStreak,
+    empathyHits: soul.empathyHits,
+    empathyRounds: soul.empathyRounds,
+    archetype,
+    missed,
+  };
 }
 
 export async function getWorldState() {
@@ -182,8 +193,10 @@ async function startRound() {
 
   const world = await WorldState.findById('global').lean();
   const q = generateQuestion(world);
-  // The client sees only the prompt + options; the value tags stay server-side.
-  const question = { category: q.category, prompt: q.prompt, optionA: q.optionA, optionB: q.optionB };
+  // The client sees only the prompt + options + a "heavy" cue; the value tags
+  // stay server-side. Mortality and existential questions count as heavy too.
+  const heavy = Boolean(q.heavy || q.category === 'mortality' || q.category === 'existential');
+  const question = { category: q.category, heavy, prompt: q.prompt, optionA: q.optionA, optionB: q.optionB };
   const traitSpec = { A: q.A, B: q.B };
 
   state.round = await Round.create({
@@ -199,6 +212,7 @@ async function startRound() {
   state.votedSessions = new Set();
   state.tribeTally = emptyTribeTally();
   state.votesByIp = new Map();
+  state.predictions = new Map();
   state.phase = 'voting';
   state.metrics.roundsAllTime += 1;
   resetBroadcast();
@@ -250,6 +264,15 @@ export async function castVote(sessionId, choice, ip) {
   state.tribeTally[tribe][choice] += 1;
 
   markVote(choice);
+}
+
+// A soul's guess at which way the crowd will lean (the empathy game). Kept in
+// memory for the round; scored against the result at resolve.
+export function predict(sessionId, choice) {
+  if (!state.round || state.round.status !== 'active') return;
+  if (choice !== 'A' && choice !== 'B') return;
+  if (typeof sessionId !== 'string' || sessionId.length === 0 || sessionId.length > 100) return;
+  state.predictions.set(sessionId, choice);
 }
 
 async function resolveRound() {
@@ -340,18 +363,29 @@ async function resolveRound() {
 
       const sids = [...new Set(votes.map((v) => v.sessionId))];
       const profiled = await Soul.find({ sessionId: { $in: sids } })
-        .select('sessionId votesCast traits streak lastVotedRound')
+        .select('sessionId votesCast traits streak bestStreak lastVotedRound')
         .lean();
       const ops = [];
       for (const p of profiled) {
+        const archetype = archetypeOf(p);
         rememberTribe(p.sessionId, tribeOf(p) ?? 'Unaligned');
         const streak = p.lastVotedRound === roundNumber - 1 ? (p.streak || 0) + 1 : 1;
-        ops.push({
-          updateOne: {
-            filter: { sessionId: p.sessionId },
-            update: { $set: { archetype: archetypeOf(p), streak, lastVotedRound: roundNumber } },
-          },
-        });
+        const set = { archetype, streak, lastVotedRound: roundNumber };
+        if (streak > (p.bestStreak || 0)) set.bestStreak = streak;
+
+        // Empathy: did this soul correctly predict the crowd's lean?
+        const inc = {};
+        const guess = state.predictions.get(p.sessionId);
+        if (guess) {
+          inc.empathyRounds = 1;
+          if (guess === result) inc.empathyHits = 1;
+        }
+
+        const update = { $set: set };
+        if (Object.keys(inc).length) update.$inc = inc;
+        // A bounded trail of the soul's archetype over time (only once profiled).
+        if (archetype) update.$push = { journey: { $each: [{ roundNumber, archetype }], $slice: -40 } };
+        ops.push({ updateOne: { filter: { sessionId: p.sessionId }, update } });
       }
       if (ops.length) await Soul.bulkWrite(ops);
     }

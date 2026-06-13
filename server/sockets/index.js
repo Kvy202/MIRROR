@@ -1,5 +1,6 @@
 import {
   castVote,
+  predict,
   getActiveRoundPayload,
   getTribePayload,
   getWorldState,
@@ -69,6 +70,12 @@ export function registerSockets(io) {
       castVote(socket.data.sessionId, choice, socket.data.ip).catch((err) =>
         console.error('[vote] error', err)
       );
+    });
+
+    // The empathy game: a guess at which way the crowd will lean.
+    socket.on('predict:cast', ({ choice } = {}) => {
+      if (!voteLimit()) return;
+      predict(socket.data.sessionId, choice);
     });
 
     socket.on('disconnect', () => {

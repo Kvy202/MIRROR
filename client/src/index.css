@@ -458,6 +458,98 @@ body {
   border-color: #b061ff;
   box-shadow: 0 0 18px rgba(176, 97, 255, 0.4);
 }
+.footer__row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* ---- predictor (the empathy game) ---- */
+.predict {
+  margin: 16px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.predict__label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
+.predict__btns { display: flex; gap: 8px; pointer-events: auto; }
+.predict__btn {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--fg);
+  background: rgba(11, 14, 23, 0.85);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  width: 38px;
+  height: 32px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.predict__btn:hover { border-color: #ffd23d; box-shadow: 0 0 14px rgba(255, 210, 61, 0.4); }
+
+/* ---- you vs the crowd (verdict) ---- */
+.verdict__you { margin: 14px 0 0; color: var(--a); letter-spacing: 0.04em; font-size: 15px; }
+.verdict__you--minority { color: var(--b); }
+.verdict__predict { margin: 6px 0 0; color: var(--muted); font-size: 13px; letter-spacing: 0.04em; }
+
+/* ---- heavy cue + skip ---- */
+.dilemma__tags { display: inline-flex; gap: 8px; align-items: center; }
+.dilemma__heavy {
+  color: #ffd23d;
+  border: 1px solid rgba(255, 210, 61, 0.4);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.dilemma__skiprow {
+  margin-top: 14px;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+}
+.dilemma__skip, .dilemma__showanyway {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  pointer-events: auto;
+}
+.dilemma__skip:hover, .dilemma__showanyway:hover { color: var(--fg); }
+.dilemma__skiptoggle { color: var(--muted); display: inline-flex; gap: 5px; align-items: center; cursor: pointer; }
+.dilemma--skipped { text-align: center; }
+.dilemma__sat { color: var(--muted); margin: 24px 0 14px; letter-spacing: 0.06em; }
+
+/* ---- kindred line ---- */
+.kindred {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  margin: 14px 0 0;
+}
+
+/* ---- soul portrait extras ---- */
+.presence__badge--btn { font-family: inherit; cursor: pointer; }
+.portrait__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 6px 0 18px;
+}
+.portrait__stats b { color: var(--fg); }
+.portrait__journey { border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: 16px; }
+.portrait__journeyrow { font-size: 13px; color: var(--fg); }
+.portrait__arrow { color: var(--muted); }
+.portrait__actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
 /* ---- Absence reveal ("you weren't here") ---- */
 .absence {

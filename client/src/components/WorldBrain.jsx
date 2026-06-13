@@ -21,8 +21,10 @@ const mix = (c1, c2, t) => [
   c1[2] + (c2[2] - c1[2]) * t,
 ];
 
-export default function WorldBrain() {
+export default function WorldBrain({ world }) {
   const canvasRef = useRef(null);
+  const worldRef = useRef(world);
+  worldRef.current = world; // feed live hope/heart into the rAF loop
   const S = useRef({
     nodes: [],
     edges: [],
@@ -220,6 +222,37 @@ export default function WorldBrain() {
       };
       drawPole('◄ A', s.tally.A, A_COLOR, 14, 'left');
       drawPole('B ►', s.tally.B, B_COLOR, w - 14, 'right');
+
+      // ---- the face in the mirror ----
+      // Two eyes and a mouth whose curve tracks the crowd's hope (a smile when
+      // hopeful, a frown when bleak), tinted by warmth. Subtle, breathing.
+      const wd = worldRef.current;
+      if (wd?.heart) {
+        const hope = wd.hope ?? 50;
+        const warmth = wd.heart.warmth ?? 50;
+        const cx = w / 2;
+        const cy = h / 2;
+        const faceColor = mix(NEUTRAL, mix(B_COLOR, A_COLOR, warmth / 100), 0.5);
+        const blink = 0.55 + 0.45 * Math.abs(Math.sin(time * 0.6)); // slow breathing
+        ctx.strokeStyle = rgba(faceColor, 0.5 * blink);
+        ctx.fillStyle = rgba(faceColor, 0.5 * blink);
+        const eyeY = cy - h * 0.1;
+        const eyeDx = w * 0.085;
+        for (const sx of [-1, 1]) {
+          ctx.beginPath();
+          ctx.arc(cx + sx * eyeDx, eyeY, 3.2, 0, 6.2832);
+          ctx.fill();
+        }
+        // mouth: curvature from hope (−1 frown … +1 smile)
+        const curve = ((hope - 50) / 50) * (h * 0.06);
+        const mw = w * 0.13;
+        const my = cy + h * 0.08;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - mw, my);
+        ctx.quadraticCurveTo(cx, my + curve, cx + mw, my);
+        ctx.stroke();
+      }
 
       raf = requestAnimationFrame(frame);
     }

@@ -2,7 +2,7 @@ import { archetypeMeta } from '../lib/alignments.js';
 
 // You are never the only one reflecting. Once the mirror has read you, your
 // archetype rides here as a permanent badge; the chapter opens the portrait.
-export default function Presence({ count, connected, world, archetype, onOpenCodex }) {
+export default function Presence({ count, connected, world, archetype, onOpenCodex, onOpenPortrait }) {
   const meta = archetype ? archetypeMeta(archetype) : null;
 
   return (
@@ -13,9 +13,14 @@ export default function Presence({ count, connected, world, archetype, onOpenCod
       </div>
       <div className="presence__stats">
         {meta && (
-          <span className="presence__badge" style={{ '--ac': meta.color }} title="What the mirror reads in you">
+          <button
+            className="presence__badge presence__badge--btn"
+            style={{ '--ac': meta.color }}
+            title="Open your reflection"
+            onClick={onOpenPortrait}
+          >
             {archetype}
-          </span>
+          </button>
         )}
         {world && (
           <button className="presence__era" onClick={onOpenCodex} title="Open the portrait of the crowd">

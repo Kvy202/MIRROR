@@ -6,6 +6,7 @@ const roundSchema = new mongoose.Schema({
   roundNumber: { type: Number, required: true, unique: true, index: true },
   question: {
     category: { type: String, default: 'self' },
+    heavy: { type: Boolean, default: false },
     prompt: { type: String, required: true },
     optionA: { type: String, required: true },
     optionB: { type: String, required: true },

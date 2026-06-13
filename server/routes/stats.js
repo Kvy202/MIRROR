@@ -65,6 +65,11 @@ statsRouter.get('/soul/:sessionId', async (req, res) => {
     rarity,
     revealAt: REVEAL_AT,
     streak: soul.streak,
+    bestStreak: soul.bestStreak,
+    empathyHits: soul.empathyHits,
+    empathyRounds: soul.empathyRounds,
+    empathyRate: soul.empathyRounds ? soul.empathyHits / soul.empathyRounds : null,
+    journey: soul.journey ?? [],
     firstSeen: soul.firstSeen,
   });
 });
