@@ -31,7 +31,7 @@ export const config = {
 
   // Round cadence: time to answer, then to reveal what the mirror chose. These
   // are real, weighty human questions — give people room to actually think.
-  voteMs: 45_000,
+  voteMs: 30_000,
   revealMs: 7_000,
 
   // Live answer broadcasts are coalesced and flushed at most this often.
