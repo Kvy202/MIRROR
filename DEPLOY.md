@@ -50,15 +50,27 @@ docker run -d --name mongo --network webnet \
 > One `mongod` serves both databases (`mirror`, `pulse`). Servers reach it as
 > `mongodb://mongo:27017/...` — the service name, never `127.0.0.1`.
 
-## 5. Deploy each app
+## 5. Secrets — persistent, per-app env files (not shell exports)
+Each app reads its secrets from a **permanent, root-only, git-ignored** file:
+`/etc/tradyai/mirror.env` and `/etc/tradyai/pulse.env`, each with **its own
+`SESSION_SECRET`**. `deploy/docker-compose.prod.yml` loads it via `env_file`, and
+`deploy.sh` **refuses to deploy if it's missing** — dropping a ready-to-use
+example (with a freshly generated secret) the first time:
+
 ```bash
-export SESSION_SECRET=$(openssl rand -base64 48)   # one per app, keep them safe
-git clone https://github.com/Kvy202/MIRROR.git && cd MIRROR && ./deploy/deploy.sh && cd ..
-git clone https://github.com/Kvy202/PULSE.git  && cd PULSE  && ./deploy/deploy.sh && cd ..
+git clone https://github.com/Kvy202/MIRROR.git && cd MIRROR
+./deploy/deploy.sh                                # fails: writes /etc/tradyai/mirror.env.example
+sudo cp /etc/tradyai/mirror.env.example /etc/tradyai/mirror.env
+./deploy/deploy.sh                                # now deploys
+cd ..
 ```
-`deploy.sh` builds + starts the server container (compose), builds the client with
-the right `VITE_SERVER_URL`, publishes it to `/srv/<app>`, and installs the nginx
-block. The server containers publish to `127.0.0.1:4001` / `:4000` only.
+Repeat for PULSE (`/etc/tradyai/pulse.env`). The files persist across reboots and
+redeploys; keep them backed up somewhere safe.
+
+`deploy.sh` then builds + starts the server container (compose), installs the
+shared forwarded-proto map + the app's nginx block, builds the client with the
+right `VITE_SERVER_URL`, and publishes it to `/srv/<app>`. Containers publish to
+`127.0.0.1:4001` / `:4000` only.
 
 ## 6. ALB
 6. Create an internet-facing **ALB** across both public subnets (ALB SG).
@@ -79,6 +91,19 @@ block. The server containers publish to `127.0.0.1:4001` / `:4000` only.
 ## Updating
 SSH in, `git pull` in the repo, re-run `./deploy/deploy.sh`. (Or wire a GitHub
 Actions job that SSHes and runs it.)
+
+## Backups (Mongo)
+One `mongo` container holds both databases. Dump everything to a gzip archive:
+```bash
+docker exec mongo mongodump --archive --gzip > "mongo-$(date +%F).archive.gz"
+```
+Restore it (the `--drop` replaces existing data):
+```bash
+docker exec -i mongo mongorestore --archive --gzip --drop < mongo-2026-06-17.archive.gz
+```
+Run the dump on a schedule with cron and keep a few days of archives. *(Optional,
+later: copy the archive off-box with `aws s3 cp … s3://your-bucket/` — not set up
+here yet.)*
 
 ## Notes
 - **One instance per app.** Never run two — the loops would fight over the DB.
