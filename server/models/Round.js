@@ -26,4 +26,9 @@ const roundSchema = new mongoose.Schema({
   reflection: { type: mongoose.Schema.Types.Mixed, default: null },
 });
 
+// The lasting "memory" lives in WorldState + Soul; individual round records are
+// only read recently (history/timeline). Expire them after 30 days to bound
+// growth under 24/7 traffic. roundNumber keeps counting up regardless.
+roundSchema.index({ startedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 });
+
 export const Round = mongoose.model('Round', roundSchema);
